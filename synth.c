@@ -5,6 +5,9 @@
 
 #include "synth.h"
 
+#define CLK_ON  TCCR1B |= (1 << CS11)
+#define CLK_OFF TCCR1B &= ~(1 << CS11)
+
 void init(void);
 
 int main(void)
@@ -13,13 +16,33 @@ int main(void)
   // init i/o, timer clocks
   init();
 
-  // ~400 Hz
-  OCR1AH = 0x00;
-  OCR1AL = 0x00;
-  
-  sei();
+  //CLK_ON;
 
   while(1) {
+    cli();
+    unsigned int var = (PIND << 7) | (PINB & 0x07) | ((PINB & 0xE0) >> 2);
+    //OCR1A = ~(var);
+
+    var = ((~var) & 0x0FFF);
+    
+    if (var >= 65)
+      CLK_ON;
+    else
+      CLK_OFF;
+
+    var = var << 3;
+
+    OCR1A = var;
+
+    /*    while (var) {
+      PORTA ^= (1 << PA1);
+      var--;
+      _delay_ms(1);
+      }*/
+
+    //_delay_ms(500);
+    sei();
+
   }
 
   return 0;
@@ -33,9 +56,6 @@ void init(void)
 
   // set top of l/r counter to OCR1A register
   TCCR1B |= (1 << WGM12);
-
-  // set timer prescaler to clk/1024
-  TCCR1B |= (1 << CS12);
 
   // set our left and right channels to outputs
   DDRA |= (1 << PA0) | (1 << PA1);
