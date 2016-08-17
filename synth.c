@@ -9,10 +9,16 @@
 #define CLK_OFF TCCR1B &= ~(1 << CS11)
 
 void init(void);
+void read_keys();
+
+volatile unsigned int keys;
 
 int main(void)
 {
-  
+
+  // loop var
+  uint8_t p;
+  uint8_t key_down = 0;
   // init i/o, timer clocks
   init();
 
@@ -20,19 +26,64 @@ int main(void)
 
   while(1) {
     cli();
-    unsigned int var = (PIND << 7) | (PINB & 0x07) | ((PINB & 0xE0) >> 2);
-    //OCR1A = ~(var);
 
-    var = ((~var) & 0x0FFF);
+    //    read_keys();
+
+    /*for( p=0; p< NUM_KEYS; p++ ){
+
+      if( keys & (1 << p) ){
+	play_note(p);
+	key_down = 1;
+      }
+      }*/
     
-    if (var >= 65)
+
+
+      
+    if( ~PIND & (1 << PD0)){
+      OCR1A = 3188;
       CLK_ON;
-    else
-      CLK_OFF;
-
-    var = var << 3;
-
-    OCR1A = var;
+    }
+    
+    else if( ~PIND & (1 << PD2)){
+      OCR1A = 2839;
+      CLK_ON;
+    }
+    
+    else if( ~PIND & (1 << PD3)){
+      OCR1A = 2530;
+      CLK_ON;
+    }
+    
+    else if( ~PINB & (1 << PB0)) {
+      OCR1A = 2387;
+      CLK_ON;
+    }
+    
+    else if( ~PINB & (1 << PB1)) {
+      OCR1A = 2127;
+      CLK_ON;
+    }
+    
+    else if( ~PINB & (1 << PB2)) {
+      OCR1A = 1895;
+      CLK_ON;
+    }
+    
+    else if( ~PINB & (1 << PB5)) {
+      OCR1A = 1689;
+      CLK_ON;
+    }
+    
+    else if( ~PINB & (1 << PB6)) {
+      OCR1A = 1593;
+      CLK_ON;
+    }
+    
+    else CLK_OFF;
+	   
+    
+    
 
     /*    while (var) {
       PORTA ^= (1 << PA1);
@@ -47,6 +98,11 @@ int main(void)
 
   return 0;
 
+}
+
+void read_keys()
+{
+  keys = (PIND << 7) | ((PINB & 0x07) << 4) | ((PINB & 0xE0) >> 5);
 }
 
 void init(void)
